@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+
+
+
+void main()
+{
+    int no_of_processes, i, j, k, pID = 65, flag = 0;
+    char process[20];
+    int burst_time[20], priority[20], pos;
+    int time = 0, quantum = 1, tbt = 0;
+    int z = 0, lottery[20], ticket[20][20], winning_processes = 0;
+    printf("Enter Number Of Process: ");
+    scanf("%d", &no_of_processes);
+    if (no_of_processes <= 0)
+    {
+        printf("\n\n Invalid input");
+        exit(0);
+    }
+    for (i = 0; i < no_of_processes; i++)
+    {
+        process[i] = pID;
+        pID += 1;
+    }
+    for (i = 0; i < no_of_processes; i++)
+    {
+        printf("\nEnter Burst Time %c: ", process[i]);
+        scanf("%d", &burst_time[i]);
+        printf("Enter Priority  ", process[i], no_of_processes);
+        scanf("%d", &priority[i]);
+    }
+
+    
+    for (i = 0; i < no_of_processes; i++)
+    {
+        pos = i;
+        for (j = i + 1; j < no_of_processes; j++)
+        {
+            if (priority[j] < priority[pos])
+                pos = j;
+        }
+
+        pID = process[i];
+        process[i] = process[pos];
+        process[pos] = pID;
+
+        pID = burst_time[i];
+        burst_time[i] = burst_time[pos];
+        burst_time[pos] = pID;
+
+        pID = priority[i];
+        priority[i] = priority[pos];
+        priority[pos] = pID;
+
+        if (burst_time[i] < 0)
+        {
+            flag = 1;
+        }
+    }
+
+    if (flag == 1)
+    {
+        printf("\n\n Invalid Input \n");
+        exit(0);
+    }
+
+    printf("\n |Priority |  Process   |  burst |");
+
+    for (i = 0; i < no_of_processes; i++)
+    {
+        printf("\n |   %d \t   |    %c    \t|   %d    |", priority[i], process[i], burst_time[i]);
+        tbt = tbt + burst_time[i];
+    }
+
+   
+
+    int ticketID = 1, total_tickets = 0;
+    printf("\n\n\nPriority  process  burst  Lottery  Tickets");
+    for (i = 0; i < no_of_processes; i++)
+    {
+        lottery[i] = (burst_time[i] / quantum) + (no_of_processes - priority[i]);
+        for (z = 0; z < lottery[i]; z++)
+        {
+            ticket[i][z] = ticketID++;
+            total_tickets = ticketID;
+        }
+
+        printf("\n  %d\t    %c\t    %d \t    %d\t", priority[i], process[i], burst_time[i], lottery[i]);
+        for (z = 0; z < lottery[i]; z++)
+        {
+             printf("  ::%d::", ticket[i][z]);
+        }
+    }
+
+    while (time != tbt)
+    {
+
+        int winner = (rand() % total_tickets - 1) + 1;
+        for (i = 0; i < no_of_processes; i++)
+            for (z = 0; z < lottery[i]; z++)
+                if (ticket[i][z] == winner)
+                    winning_processes = i;
+
+        printf("\n\n-------------------------------------");
+        printf("<<<<   Ticket Selected: %d   >>>>", winner);
+        printf("-------------------------------------\n");
+
+        if ((burst_time[winning_processes] > 0))
+        {
+            burst_time[winning_processes] -= quantum;
+
+            if (burst_time[winning_processes] > 0)
+            {
+                time += quantum;
+            }
+            else
+            {
+                time += (burst_time[winning_processes] + quantum);
+            }
+
+            if (burst_time[winning_processes] < 0)
+            {
+                burst_time[winning_processes] = 0;
+            }
+            printf("\n\t\t\t\t  The process that is running : %c", process[winning_processes]);
+            printf("\n\t   (Total Time << Remaining burst Time Of This Process << process ):  ( %d  <<  %d  <<  %c )\n", time, burst_time[winning_processes], process[winning_processes]);
+        }
+        else
+        {
+            printf("\n\t\t Process with This Ticket Has Been Completed already\n");
+        }
+    }
+}
