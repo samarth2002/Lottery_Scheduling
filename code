@@ -10,6 +10,7 @@
 
 void main()
 {
+    // kaney west
     int no_of_processes, i, j, k, pID = 65, flag = 0;
     char process[20];
     int burst_time[20], priority[20], pos;
